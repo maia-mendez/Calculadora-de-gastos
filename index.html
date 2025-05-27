@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Gastos Mensuales</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Calculadora de Gastos Mensuales</h1>
+            <div class="header-buttons">
+                <div class="user-info-container">
+                    <span id="userInfo"></span>
+                    <button id="logoutBtn" class="btn-logout" title="Cerrar sesión">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+                <button id="toggleTheme" class="btn-theme">
+                    <span class="theme-icon"><i class="fas fa-moon"></i></span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Formulario para ingresar gastos -->
+        <form id="gastoForm">
+            <div class="form-group">
+                <label for="monto">Monto (₲):</label>
+                <input type="number" id="monto" name="monto" step="1" min="0" placeholder="Ingrese el monto en guaraníes" required>
+            </div>
+
+            <div class="form-group">
+                <label for="categoria">Categoría:</label>
+                <select id="categoria" name="categoria" required>
+                    <option value="">Seleccione una categoría</option>
+                    <option value="comida">Comida</option>
+                    <option value="transporte">Transporte</option>
+                    <option value="vivienda">Vivienda</option>
+                    <option value="entretenimiento">Entretenimiento</option>
+                    <option value="servicios">Servicios</option>
+                    <option value="otros">Otros</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="descripcion">Descripción:</label>
+                <input type="text" id="descripcion" name="descripcion" placeholder="Ingrese una descripción del gasto" required>
+            </div>
+
+            <div class="form-group">
+                <label for="fecha">Fecha:</label>
+                <input type="date" id="fecha" name="fecha" required>
+            </div>
+
+            <button type="submit" class="btn-agregar">Agregar Gasto</button>
+        </form>
+
+        <!-- Sección de resumen -->
+        <div class="resumen">
+            <h2>Resumen de Gastos</h2>
+            <div class="totales">
+                <p>Total General: <span id="totalGeneral">₲ 0</span></p>
+                <div id="totalesPorCategoria">
+                    <!-- Aquí se mostrarán los totales por categoría -->
+                </div>
+            </div>
+            <div class="botones-accion">
+                <button id="limpiarGastos" class="btn-limpiar">Limpiar Todos los Gastos</button>
+                <button id="exportarCSV" class="btn-exportar">Exportar a CSV</button>
+                <button id="exportarPDF" class="btn-exportar">Exportar a PDF</button>
+            </div>
+        </div>
+
+        <!-- Sección de gráficos -->
+        <div class="graficos">
+            <div class="grafico-container">
+                <h2>Distribución por Categoría</h2>
+                <canvas id="graficoPie"></canvas>
+            </div>
+            <div class="grafico-container">
+                <h2>Gastos por Mes</h2>
+                <canvas id="graficoBarras"></canvas>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filtros">
+            <h2>Filtros</h2>
+            <div class="filtros-container">
+                <div class="form-group">
+                    <label for="filtroCategoria">Categoría:</label>
+                    <select id="filtroCategoria">
+                        <option value="">Todas las categorías</option>
+                        <option value="comida">Comida</option>
+                        <option value="transporte">Transporte</option>
+                        <option value="vivienda">Vivienda</option>
+                        <option value="entretenimiento">Entretenimiento</option>
+                        <option value="servicios">Servicios</option>
+                        <option value="otros">Otros</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="filtroFechaInicio">Fecha Inicio:</label>
+                    <input type="date" id="filtroFechaInicio">
+                </div>
+                <div class="form-group">
+                    <label for="filtroFechaFin">Fecha Fin:</label>
+                    <input type="date" id="filtroFechaFin">
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de gastos -->
+        <div class="lista-gastos">
+            <h2>Gastos Registrados</h2>
+            <ul id="listaGastos">
+                <!-- Aquí se mostrarán los gastos -->
+            </ul>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 
