@@ -32,8 +32,13 @@
         <!-- Formulario para ingresar gastos -->
         <form id="gastoForm">
             <div class="form-group">
-                <label for="monto">Monto (₲):</label>
-                <input type="number" id="monto" name="monto" step="1" min="0" placeholder="Ingrese el monto en guaraníes" required>
+                <label for="sueldoInicial">Sueldo Importado (₲):</label>
+                <input type="number" id="sueldoInicial" name="sueldoInicial" step="1" min="0" placeholder="Ingrese su sueldo inicial">
+            </div>
+
+            <div class="form-group">
+                <label for="monto">Importe (₲):</label>
+                <input type="number" id="monto" name="monto" step="1" min="0" placeholder="Ingrese el importe en guaraníes" required>
             </div>
 
             <div class="form-group">
@@ -66,7 +71,9 @@
         <div class="resumen">
             <h2>Resumen de Gastos</h2>
             <div class="totales">
+                <p>Sueldo Disponible: <span id="saldoDisponible">₲ 0</span></p>
                 <p>Total General: <span id="totalGeneral">₲ 0</span></p>
+                
                 <div id="totalesPorCategoria">
                     <!-- Aquí se mostrarán los totales por categoría -->
                 </div>

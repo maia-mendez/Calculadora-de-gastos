@@ -546,4 +546,31 @@ button:hover {
 
 [data-theme="dark"] .login-link a:hover {
     color: #45a049;
+}
+
+/* Estilos para el input de Sueldo */
+#sueldo {
+    /* Ya hereda estilos generales de input, si quieres algo específico añádelo aquí */
+}
+
+/* Estilos para el Saldo Restante */
+#saldoRestante {
+    font-weight: bold;
+    /* El color se maneja en script.js para el estado negativo */
+}
+
+/* Estilos para el input de Sueldo Inicial */
+#sueldoInicial {
+    /* Hereda estilos generales de input */
+}
+
+/* Estilos para el Saldo Disponible */
+#saldoDisponible {
+    font-weight: bold;
+    /* El color se maneja en script.js para el estado negativo */
+}
+
+/* Puedes ajustar el layout de los totales si quieres que Sueldo, Total y Saldo se vean diferentes */
+.totales p {
+    /* Estilos existentes para párrafos de totales */
 } 
