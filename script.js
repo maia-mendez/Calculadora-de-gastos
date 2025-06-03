@@ -942,6 +942,32 @@ let gestorGastos;
 // Esperar a que el DOM esté cargado
 document.addEventListener('DOMContentLoaded', () => {
     gestorGastos = new GestorGastos();
+
+    // Inicializar funcionalidad de acordeón para las FAQs
+    const faqQuestions = document.querySelectorAll('.faq-question');
+
+    faqQuestions.forEach(question => {
+        question.addEventListener('click', () => {
+            const answer = question.nextElementSibling; // La respuesta es el siguiente hermano
+
+            // Cerrar otras respuestas al abrir una nueva
+            faqQuestions.forEach(otherQuestion => {
+                if (otherQuestion !== question) {
+                    otherQuestion.classList.remove('active');
+                    const otherAnswer = otherQuestion.nextElementSibling;
+                    if (otherAnswer) {
+                       otherAnswer.classList.remove('show');
+                    }
+                }
+            });
+
+            // Toggle la respuesta actual
+            question.classList.toggle('active');
+            if (answer) {
+                answer.classList.toggle('show');
+            }
+        });
+    });
 });
 
 // Código relacionado con login.js y register.js (deberían estar en sus propios archivos)
