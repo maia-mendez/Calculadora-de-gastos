@@ -35,10 +35,9 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
 
 // Clase para manejar los gastos
 class Gasto {
-    constructor(monto, categoria, descripcion, fecha) {
+    constructor(monto, categoria, fecha) {
         this.monto = parseFloat(monto);
         this.categoria = categoria;
-        this.descripcion = descripcion;
         this.fecha = fecha;
         this.id = Date.now(); // Identificador único
     }
@@ -64,11 +63,14 @@ class GestorGastos {
         this.btnToggleTheme = document.getElementById('toggleTheme');
         this.userInfoSpan = document.getElementById('userInfo');
         this.logoutBtn = document.getElementById('logoutBtn');
-        this.sueldoInicialInput = document.getElementById('sueldoInicial'); // Nuevo: Input de sueldo inicial
-        this.saldoDisponibleSpan = document.getElementById('saldoDisponible'); // Nuevo: Span de saldo disponible
-        this.sueldoInicial = 0; // Nuevo: Variable para el sueldo inicial
+        this.sueldoInicialInput = document.getElementById('sueldoInicial');
+        this.saldoDisponibleSpan = document.getElementById('saldoDisponible');
+        this.sueldoInicial = 0;
 
-        // Inicializar gráficos (se crearán instancias en inicializarGraficos)
+        // Inicializar el selector personalizado
+        this.inicializarSelectorPersonalizado();
+
+        // Inicializar gráficos
         this.graficoPie = null;
         this.graficoBarras = null;
         this.inicializarGraficos();
@@ -78,16 +80,91 @@ class GestorGastos {
 
         // Cargar datos y actualizar UI al iniciar
         this.cargarGastos();
-        this.cargarSueldoInicial(); // Nuevo: Cargar sueldo inicial
-        this.actualizarUI(); // Llama a actualizarSaldoDisponible internamente
+        this.cargarSueldoInicial();
+        this.actualizarUI();
 
-        // Mostrar nombre de usuario (asegurarse de que userInfoSpan esté definido)
+        // Mostrar nombre de usuario
         const loggedInUsername = localStorage.getItem('username');
         if (this.userInfoSpan && loggedInUsername) {
             this.userInfoSpan.textContent = `Hola, ${loggedInUsername}`;
         }
 
         this.inicializarEventListeners();
+    }
+
+    // Método para inicializar el selector personalizado
+    inicializarSelectorPersonalizado() {
+        const selectSelected = document.getElementById('selectSelected');
+        const selectItems = document.getElementById('selectItems');
+        const categoriaInput = document.getElementById('categoria');
+        let isOpen = false;
+
+        // Función para cerrar el selector
+        const cerrarSelector = () => {
+            selectItems.classList.add('select-hide');
+            isOpen = false;
+        };
+
+        // Función para abrir el selector
+        const abrirSelector = () => {
+            selectItems.classList.remove('select-hide');
+            isOpen = true;
+        };
+
+        // Click en el selector
+        selectSelected.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (isOpen) {
+                cerrarSelector();
+            } else {
+                abrirSelector();
+            }
+        });
+
+        // Click en las categorías
+        document.querySelectorAll('.category-header').forEach(header => {
+            header.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const category = header.parentElement;
+                const subcategories = category.querySelector('.subcategories');
+                const icon = header.querySelector('i');
+
+                // Cerrar otras categorías
+                document.querySelectorAll('.subcategories').forEach(sub => {
+                    if (sub !== subcategories) {
+                        sub.classList.remove('show');
+                        sub.parentElement.querySelector('.category-header').classList.remove('active');
+                    }
+                });
+
+                // Toggle la categoría actual
+                subcategories.classList.toggle('show');
+                header.classList.toggle('active');
+            });
+        });
+
+        // Click en los items
+        document.querySelectorAll('.select-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const value = item.getAttribute('data-value');
+                const text = item.textContent;
+                
+                // Actualizar el input oculto y el texto mostrado
+                categoriaInput.value = value;
+                selectSelected.textContent = text;
+                
+                // Cerrar el selector
+                cerrarSelector();
+            });
+        });
+
+        // Click fuera del selector
+        document.addEventListener('click', (e) => {
+            if (!selectItems.contains(e.target) && e.target !== selectSelected) {
+                cerrarSelector();
+            }
+        });
     }
 
     // Método para cargar gastos de localStorage
@@ -114,10 +191,12 @@ class GestorGastos {
     calcularTotalesPorCategoria() {
         const totales = {};
         this.gastos.forEach(gasto => {
-            if (!totales[gasto.categoria]) {
-                totales[gasto.categoria] = 0;
+            // Obtener la categoría principal (antes del guión)
+            const categoriaPrincipal = gasto.categoria.split('-')[0];
+            if (!totales[categoriaPrincipal]) {
+                totales[categoriaPrincipal] = 0;
             }
-            totales[gasto.categoria] += gasto.monto;
+            totales[categoriaPrincipal] += gasto.monto;
         });
         return totales;
     }
@@ -173,7 +252,8 @@ class GestorGastos {
         const saldo = this.calcularSaldoDisponible();
          // Solo actualizar el span si ya existe en el HTML
         if(this.saldoDisponibleSpan) {
-             this.saldoDisponibleSpan.textContent = `₲ ${saldo.toFixed(0)}`;
+             // Formatear el saldo a guaraníes antes de mostrarlo
+             this.saldoDisponibleSpan.textContent = this.formatearGuaranies(saldo);
 
              // Opcional: Cambiar color si el saldo es negativo
              if (saldo < 0) {
@@ -183,6 +263,23 @@ class GestorGastos {
                  this.saldoDisponibleSpan.style.color = 'var(--text-color)';
              }
         }
+
+        // Actualizar el Balance del Mes
+        const totalGeneral = this.calcularTotalGeneral();
+        const balance = this.sueldoInicial - totalGeneral;
+        const balanceMesSpan = document.getElementById('balanceMes');
+         if (balanceMesSpan) {
+             balanceMesSpan.textContent = this.formatearGuaranies(balance);
+             // Opcional: Cambiar color del balance del mes si es negativo
+             if (balance < 0) {
+                 balanceMesSpan.style.color = 'red';
+             } else {
+                  balanceMesSpan.style.color = 'var(--text-color)';
+             }
+         }
+
+         // Actualizar barras de balance por categoría
+         this.actualizarBalancePorCategoria();
     }
 
     // Método para formatear números a guaraníes
@@ -236,16 +333,24 @@ class GestorGastos {
                 li.className = `categoria-${gasto.categoria}`;
                 li.innerHTML = `
                     <div>
-                        <strong>${gasto.descripcion}</strong>
+                        <strong>${gasto.categoria}</strong>
                         <br>
-                        <small>${gasto.categoria} - ${new Date(gasto.fecha).toLocaleDateString()}</small>
+                        <small>${new Date(gasto.fecha).toLocaleDateString()}</small>
                     </div>
                     <div>
                         <span>${this.formatearGuaranies(gasto.monto)}</span>
-                        <button onclick="gestorGastos.eliminarGasto(${gasto.id})" class="btn-eliminar">×</button>
+                        <button class="btn-eliminar" data-id="${gasto.id}">×</button>
                     </div>
                 `;
                 this.listaGastos.appendChild(li);
+            });
+
+            // Agregar event listeners a los botones de eliminar
+            this.listaGastos.querySelectorAll('.btn-eliminar').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = parseInt(e.target.dataset.id);
+                    this.eliminarGasto(id);
+                });
             });
 
             // Actualizar mensaje si no hay gastos
@@ -287,15 +392,24 @@ class GestorGastos {
         // Evento para agregar gasto
         if(this.form) {
              console.log("Formulario 'gastoForm' encontrado. Añadiendo listener.", this.form); // Debugging - Form encontrado
-            this.form.addEventListener('submit', (e) => {
+        this.form.addEventListener('submit', (e) => {
                 console.log("Evento 'submit' del formulario disparado."); // Debugging - Submit disparado
-                e.preventDefault();
+            e.preventDefault();
                  console.log("e.preventDefault() ejecutado."); // Debugging - preventDefault
-                // Antes de validar el formulario, validar que haya saldo suficiente
-                const montoGasto = parseFloat(document.getElementById('monto').value);
+
+                // Validar si el formulario es válido ANTES de crear el gasto
+                if (!this.validarFormulario()) {
+                     return; // Si la validación falla, detener
+                }
+
+                // Antes de agregar el gasto, validar si hay saldo suficiente (usando el valor numérico limpio del gasto)
+                 const montoInput = document.getElementById('monto');
+                 const montoValue = montoInput.value.replace(/\D/g, ''); // Limpiar antes de validar
+                 const montoNumerico = parseFloat(montoValue) || 0; // Usar 0 si no es un número válido
+
                  const saldoActual = this.calcularSaldoDisponible();
 
-                 if (montoGasto > saldoActual) {
+                 if (montoNumerico > saldoActual) {
                       Swal.fire({
                          icon: 'warning',
                          title: 'Saldo Insuficiente',
@@ -304,20 +418,16 @@ class GestorGastos {
                       return; // Detener el proceso de agregar gasto
                  }
 
-                if (this.validarFormulario()) {
-                    console.log("validarFormulario() retornó true. Llamando a agregarGasto()."); // Debugging - Validación OK
-                    this.agregarGasto();
-                } else {
-                     console.log("validarFormulario() retornó false."); // Debugging - Validación Fallida
-                }
-            });
+            this.agregarGasto(montoNumerico); // Pasar el valor numérico limpio
+
+        });
         }
 
         // Evento para limpiar gastos
         if(this.btnLimpiar) {
-            this.btnLimpiar.addEventListener('click', () => {
-                this.limpiarGastos();
-            });
+        this.btnLimpiar.addEventListener('click', () => {
+            this.limpiarGastos();
+        });
         }
 
         // Evento para filtrar
@@ -333,12 +443,22 @@ class GestorGastos {
         if(this.btnToggleTheme) this.btnToggleTheme.addEventListener('click', () => this.toggleTema());
 
         // Escuchar cambios en el input de sueldo inicial para guardar y actualizar saldo inmediatamente
+        // Restaurado a lógica simple sin formateo
         if(this.sueldoInicialInput) {
             this.sueldoInicialInput.addEventListener('input', () => {
                 this.sueldoInicial = parseFloat(this.sueldoInicialInput.value) || 0; // Actualizar la variable y manejar NaN
                 this.guardarSueldoInicial(); // Guardar inmediatamente
                 this.actualizarSaldoDisponible(); // Actualizar saldo disponible en UI
             });
+
+             // Formatear el valor inicial al cargar la página si ya tiene un valor
+             // Ya no es necesario formatear al cargar, solo asegurar que el input muestre el número guardado
+              if (localStorage.getItem('sueldoInicial')) {
+                  const sueldoGuardado = parseFloat(localStorage.getItem('sueldoInicial'));
+                  if (!isNaN(sueldoGuardado)) {
+                      this.sueldoInicialInput.value = sueldoGuardado;
+                  }
+              }
         }
 
         // Listener para el botón de logout
@@ -355,10 +475,6 @@ class GestorGastos {
                     if (result.isConfirmed) {
                         localStorage.removeItem('isAuthenticated');
                         localStorage.removeItem('username');
-                        // Opcional: Limpiar sueldo inicial al limpiar gastos
-                        // this.sueldoInicial = 0;
-                        // if(this.sueldoInicialInput) this.sueldoInicialInput.value = 0;
-                        // this.guardarSueldoInicial();
                         window.location.href = 'login.html';
                     }
                 });
@@ -367,17 +483,20 @@ class GestorGastos {
     }
 
      // Método para validar formulario
-     validarFormulario() {
+    validarFormulario() {
         console.log("Dentro de validarFormulario()"); // Debugging - Inicio validación
-        const monto = document.getElementById('monto').value;
+        const montoInput = document.getElementById('monto');
+        // Permitir dígitos y un punto decimal al limpiar el valor
+        const montoValue = montoInput.value.replace(/[^0-9.]/g, '');
+        const montoNumerico = parseFloat(montoValue) || 0;
+
         const categoria = document.getElementById('categoria').value;
-        const descripcion = document.getElementById('descripcion').value;
         const fecha = document.getElementById('fecha').value;
 
-        console.log(`Validando: Monto=${monto}, Categoria=${categoria}, Descripcion=${descripcion}, Fecha=${fecha}`); // Debugging - Valores
+        console.log(`Validando: Monto=${montoNumerico}, Categoria=${categoria}, Fecha=${fecha}`); // Debugging - Valores
 
         // Validar monto
-        if (monto <= 0) {
+        if (montoNumerico <= 0) { // Usar el valor numérico
              console.log("Validación falló: Monto <= 0"); // Debugging
             Swal.fire({
                 icon: 'error',
@@ -397,16 +516,6 @@ class GestorGastos {
             return false;
         }
 
-        // Validar descripción
-        if (descripcion.trim().length < 3) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'La descripción debe tener al menos 3 caracteres'
-            });
-            return false;
-        }
-
         // Validar fecha
         if (!fecha) {
             Swal.fire({
@@ -420,6 +529,7 @@ class GestorGastos {
         // Validar que la fecha no sea futura
         const fechaSeleccionada = new Date(fecha);
         const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0); // Comparar solo la fecha, ignorando la hora
         if (fechaSeleccionada > hoy) {
             Swal.fire({
                 icon: 'error',
@@ -433,23 +543,34 @@ class GestorGastos {
     }
 
     // Método para agregar gasto
-    agregarGasto() {
+    agregarGasto(montoNumerico) { // Recibe el valor numérico limpio
          console.log("Dentro de agregarGasto()"); // Debugging - Inicio de agregarGasto
-        const monto = document.getElementById('monto').value;
+        // const montoInput = document.getElementById('monto'); // Ya no necesario aquí
         const categoria = document.getElementById('categoria').value;
-        const descripcion = document.getElementById('descripcion').value;
         const fecha = document.getElementById('fecha').value;
-        // La validación de saldo ahora se hace en el submit listener
 
-        const gasto = new Gasto(monto, categoria, descripcion, fecha);
-        console.log("Gasto creado:", gasto); // Debugging - Gasto creado
+        // El valor numérico del monto ya viene limpio como argumento desde el listener del submit
+
+        // Crear el objeto Gasto con el valor numérico correcto del monto
+        const gasto = new Gasto(montoNumerico, categoria, fecha);
+        console.log("Gasto creado:", gasto);
         this.gastos.push(gasto);
-        console.log("Gasto añadido al array:", this.gastos); // Debugging - Array actualizado
+        console.log("Gasto añadido al array:", this.gastos);
         this.guardarGastos();
-        console.log("Gastos guardados en localStorage"); // Debugging - Guardado
-        this.actualizarUI(); // Esto llamará a actualizarSaldoDisponible
-        console.log("Llamando a actualizarUI después de agregar gasto"); // Debugging - Llamada a UI
+        console.log("Gastos guardados en localStorage");
+        this.actualizarUI(); // Esto llamará a actualizarSaldoDisponible y gráficos
+        console.log("Llamando a actualizarUI después de agregar gasto");
         this.form.reset();
+         // Resetear el selector personalizado visible
+         const selectSelected = document.getElementById('selectSelected');
+         if (selectSelected) {
+             selectSelected.textContent = 'Seleccione una categoría';
+             const categoriaInput = document.getElementById('categoria');
+              if (categoriaInput) {
+                  categoriaInput.value = '';
+              }
+         }
+
         console.log("Formulario reseteado"); // Debugging - Formulario reseteado
 
         Swal.fire({
@@ -489,7 +610,7 @@ class GestorGastos {
 
      // Método para limpiar todos los gastos
     limpiarGastos() {
-         Swal.fire({
+        Swal.fire({
             title: '¿Está seguro?',
             text: "Se eliminarán todos los gastos. Esta acción no se puede deshacer.",
             icon: 'warning',
@@ -502,12 +623,29 @@ class GestorGastos {
             if (result.isConfirmed) {
                 this.gastos = [];
                 this.guardarGastos();
-                // Opcional: Limpiar sueldo inicial al limpiar gastos
-                // this.sueldoInicial = 0;
-                // if(this.sueldoInicialInput) this.sueldoInicialInput.value = 0;
-                // this.guardarSueldoInicial();
 
-                this.actualizarUI(); // Esto llamará a actualizarSaldoDisponible
+                // Limpiar sueldo inicial y formulario
+                this.sueldoInicial = 0;
+                if(this.sueldoInicialInput) {
+                    this.sueldoInicialInput.value = ''; // Limpiar el campo de texto visible
+                }
+                this.guardarSueldoInicial(); // Guardar sueldo inicial reseteado (0)
+
+                if(this.form) {
+                    this.form.reset(); // Resetear formulario
+                     // Adicional: Resetear el selector personalizado visible
+                     const selectSelected = document.getElementById('selectSelected');
+                     if (selectSelected) {
+                         selectSelected.textContent = 'Seleccione una categoría';
+                         // Limpiar el valor del input oculto
+                         const categoriaInput = document.getElementById('categoria');
+                         if (categoriaInput) {
+                             categoriaInput.value = '';
+                         }
+                     }
+                }
+
+                this.actualizarUI(); // Esto llamará a actualizarSaldoDisponible y gráficos
                 Swal.fire(
                     '¡Borrado!',
                     'Todos los gastos han sido eliminados.',
@@ -530,12 +668,12 @@ class GestorGastos {
                     datasets: [{
                         data: [],
                         backgroundColor: [
-                            '#4CAF50', // Comida
-                            '#2196F3', // Transporte
-                            '#9C27B0', // Vivienda
-                            '#FF9800', // Entretenimiento
-                            '#F44336', // Servicios
-                            '#607D8B'  // Otros
+                            '#3B82F6', // Azul claro
+                            '#2563EB', // Azul medio
+                            '#1E40AF', // Azul oscuro
+                            '#60A5FA', // Azul más claro (opcional, para más categorías)
+                            '#17328C', // Azul más oscuro (opcional)
+                            '#93C5FD'  // Otro tono de azul (opcional)
                         ]
                     }]
                 },
@@ -570,7 +708,7 @@ class GestorGastos {
                     datasets: [{
                         label: 'Gastos por Mes',
                         data: [],
-                        backgroundColor: '#4CAF50'
+                        backgroundColor: '#3B82F6' // Usar azul claro para las barras
                     }]
                 },
                 options: {
@@ -668,13 +806,12 @@ class GestorGastos {
             return stringValor;
         };
 
-        const headers = ['Fecha', 'Categoría', 'Descripción', 'Importe'];
+        const headers = ['Fecha', 'Categoría', 'Gasto'];
         const csvContent = [
             headers.map(escaparCSV).join(','),
             ...gastosFiltrados.map(gasto => [
                 escaparCSV(new Date(gasto.fecha).toLocaleDateString()),
                 escaparCSV(gasto.categoria),
-                escaparCSV(gasto.descripcion),
                 escaparCSV(gasto.monto)
             ].join(','))
         ].join('\n');
@@ -708,11 +845,10 @@ class GestorGastos {
             doc.text(`Generado el: ${new Date().toLocaleDateString()}`, 105, 30, { align: 'center' });
 
             // Tabla de gastos
-            const headers = [['Fecha', 'Categoría', 'Descripción', 'Importe']];
+            const headers = [['Fecha', 'Categoría', 'Gasto']];
             const data = gastosFiltrados.map(gasto => [
                 new Date(gasto.fecha).toLocaleDateString(),
                 gasto.categoria,
-                gasto.descripcion,
                 this.formatearGuaranies(gasto.monto)
             ]);
 
@@ -733,9 +869,8 @@ class GestorGastos {
                 },
                 columnStyles: {
                     0: { cellWidth: 30 },
-                    1: { cellWidth: 30 },
-                    2: { cellWidth: 80 },
-                    3: { cellWidth: 30, halign: 'right' }
+                    1: { cellWidth: 50 },
+                    2: { cellWidth: 30, halign: 'right' }
                 }
             });
 
@@ -755,38 +890,58 @@ class GestorGastos {
             });
         }
     }
+
+    // Nuevo método para actualizar el balance por categoría con barras
+    actualizarBalancePorCategoria() {
+        const balancePorCategoriaDiv = document.getElementById('balancePorCategoria');
+        if (!balancePorCategoriaDiv) return; // Salir si el contenedor no existe
+
+        balancePorCategoriaDiv.innerHTML = ''; // Limpiar contenido anterior
+
+        const totalesPorCategoria = this.calcularTotalesPorCategoria();
+        const totalGeneral = this.calcularTotalGeneral();
+
+        // Si no hay gastos, mostrar un mensaje
+        if (totalGeneral === 0) {
+             balancePorCategoriaDiv.innerHTML = '<p class="no-gastos">No hay gastos registrados para mostrar balance por categoría.</p>';
+            return;
+        }
+
+        // Obtener la lista de categorías principales en orden deseado (opcional)
+        const orderedCategories = ['vivienda', 'educacion', 'transporte', 'personal']; // Definir un orden si se desea
+        const categories = Object.keys(totalesPorCategoria).sort((a, b) => {
+             const indexA = orderedCategories.indexOf(a);
+             const indexB = orderedCategories.indexOf(b);
+             if (indexA === -1 && indexB === -1) return 0; // Si ambas no están en la lista, mantener orden natural
+             if (indexA === -1) return 1; // Si A no está en la lista, B va primero
+             if (indexB === -1) return -1; // Si B no está en la lista, A va primero
+             return indexA - indexB; // Ordenar según la lista definida
+         });
+
+        categories.forEach(categoria => {
+            const total = totalesPorCategoria[categoria];
+            const porcentaje = (total / totalGeneral) * 100;
+
+            const itemDiv = document.createElement('div');
+            itemDiv.classList.add('balance-category-item');
+
+            itemDiv.innerHTML = `
+                <strong>${categoria.charAt(0).toUpperCase() + categoria.slice(1)}: ${this.formatearGuaranies(total)} (${porcentaje.toFixed(1)}%)</strong>
+                <div class="balance-bar-container">
+                    <div class="balance-bar" style="width: ${porcentaje}%;"></div>
+                </div>
+            `;
+            balancePorCategoriaDiv.appendChild(itemDiv);
+        });
+    }
 }
 
-// Inicializar la aplicación solo cuando el DOM esté completamente cargado
+// Crear una instancia global de GestorGastos
+let gestorGastos;
+
+// Esperar a que el DOM esté cargado
 document.addEventListener('DOMContentLoaded', () => {
-    // Verificación de autenticación - Esto debe estar fuera de la clase si quieres que redirija antes
-    if (localStorage.getItem('isAuthenticated') !== 'true') {
-        // Solo redirigir si no estamos ya en la página de login
-        if (!window.location.href.includes('login.html') && !window.location.href.includes('register.html') && !window.location.href.includes('reset-password.html')) {
-             Swal.fire({
-                icon: 'warning',
-                title: 'Acceso denegado',
-                text: 'Debes iniciar sesión para acceder a esta página',
-                showConfirmButton: true
-            }).then(() => {
-                window.location.href = 'login.html';
-            });
-        }
-    } else {
-        // Si el usuario está autenticado, inicializar la aplicación GestorGastos solo en index.html
-        if (window.location.href.includes('index.html')) {
-             const gestorGastos = new GestorGastos();
-        }
-         // Si está autenticado pero en login/register, redirigir a index.html
-         if (window.location.href.includes('login.html') || window.location.href.includes('register.html') || window.location.href.includes('reset-password.html')) {
-              window.location.href = 'index.html';
-         }
-    }
-
-    // Si no está autenticado y está en login/register/reset-password, no hacer nada (dejar que se muestren esas páginas)
-    // Si no está autenticado y NO está en login/register/reset-password (ej: index.html directamente), la primera verificación lo redirigirá.
-
-    // La inicialización de GestorGastos ahora está condicionada a estar autenticado y en index.html
+    gestorGastos = new GestorGastos();
 });
 
 // Código relacionado con login.js y register.js (deberían estar en sus propios archivos)

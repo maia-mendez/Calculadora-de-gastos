@@ -13,124 +13,234 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <div class="container">
-        <div class="header">
+    <header class="app-header">
+        <div class="header-left">
             <h1>Calculadora de Gastos Mensuales</h1>
-            <div class="header-buttons">
-                <div class="user-info-container">
+        </div>
+        <div class="header-right">
+             <div class="user-info-container">
                     <span id="userInfo"></span>
                     <button id="logoutBtn" class="btn-logout" title="Cerrar sesión">
                         <i class="fas fa-sign-out-alt"></i>
                     </button>
                 </div>
-                <button id="toggleTheme" class="btn-theme">
-                    <span class="theme-icon"><i class="fas fa-moon"></i></span>
-                </button>
-            </div>
         </div>
-        
-        <!-- Formulario para ingresar gastos -->
-        <form id="gastoForm">
-            <div class="form-group">
-                <label for="sueldoInicial">Sueldo Importado (₲):</label>
+    </header>
+
+    <div class="container main-layout">
+        <!-- Columna Izquierda: Formulario de Ingreso y Sueldo -->
+        <div class="left-column card">
+             <div class="form-group sueldo-input-group">
+                <label for="sueldoInicial">Sueldo:</label>
                 <input type="number" id="sueldoInicial" name="sueldoInicial" step="1" min="0" placeholder="Ingrese su sueldo inicial">
             </div>
-
-            <div class="form-group">
-                <label for="monto">Importe (₲):</label>
-                <input type="number" id="monto" name="monto" step="1" min="0" placeholder="Ingrese el importe en guaraníes" required>
-            </div>
-
-            <div class="form-group">
-                <label for="categoria">Categoría:</label>
-                <select id="categoria" name="categoria" required>
-                    <option value="">Seleccione una categoría</option>
-                    <option value="comida">Comida</option>
-                    <option value="transporte">Transporte</option>
-                    <option value="vivienda">Vivienda</option>
-                    <option value="entretenimiento">Entretenimiento</option>
-                    <option value="servicios">Servicios</option>
-                    <option value="otros">Otros</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="descripcion">Descripción:</label>
-                <input type="text" id="descripcion" name="descripcion" placeholder="Ingrese una descripción del gasto" required>
-            </div>
-
-            <div class="form-group">
-                <label for="fecha">Fecha:</label>
-                <input type="date" id="fecha" name="fecha" required>
-            </div>
-
-            <button type="submit" class="btn-agregar">Agregar Gasto</button>
-        </form>
-
-        <!-- Sección de resumen -->
-        <div class="resumen">
-            <h2>Resumen de Gastos</h2>
-            <div class="totales">
-                <p>Sueldo Disponible: <span id="saldoDisponible">₲ 0</span></p>
-                <p>Total General: <span id="totalGeneral">₲ 0</span></p>
-                
-                <div id="totalesPorCategoria">
-                    <!-- Aquí se mostrarán los totales por categoría -->
+            <h2>Registrar Gasto</h2>
+            <!-- Formulario para ingresar gastos -->
+            <form id="gastoForm">
+                <div class="form-group">
+                    <label for="monto">Gasto (₲):</label>
+                    <input type="number" id="monto" name="monto" step="1" min="0" placeholder="Ingrese el gasto en guaraníes" required>
                 </div>
+
+                <div class="form-group">
+                    <label for="categoria">Categoría:</label>
+                    <div class="custom-select">
+                        <div class="select-selected" id="selectSelected">Seleccione una categoría</div>
+                        <div class="select-items select-hide" id="selectItems">
+                            <div class="select-category" data-category="vivienda">
+                                <div class="category-header">
+                                    <span>Vivienda</span>
+                                    <i class="fas fa-chevron-right"></i>
+                                </div>
+                                <div class="subcategories">
+                                    <div class="select-item" data-value="vivienda-internet">Internet</div>
+                                    <div class="select-item" data-value="vivienda-tv">Pago por la Televisión</div>
+                                    <div class="select-item" data-value="vivienda-agua">Agua</div>
+                                    <div class="select-item" data-value="vivienda-luz">Luz</div>
+                                    <div class="select-item" data-value="vivienda-gas">Gas</div>
+                                    <div class="select-item" data-value="vivienda-alquiler">Alquiler</div>
+                                </div>
+                            </div>
+                            <div class="select-category" data-category="educacion">
+                                <div class="category-header">
+                                    <span>Educación</span>
+                                    <i class="fas fa-chevron-right"></i>
+                                </div>
+                                <div class="subcategories">
+                                    <div class="select-item" data-value="educacion-matricula">Matrícula</div>
+                                    <div class="select-item" data-value="educacion-material">Material Escolar</div>
+                                    <div class="select-item" data-value="educacion-extraescolares">Gastos Extraescolares</div>
+                                </div>
+                            </div>
+                            <div class="select-category" data-category="transporte">
+                                <div class="category-header">
+                                    <span>Transporte</span>
+                                    <i class="fas fa-chevron-right"></i>
+                                </div>
+                                <div class="subcategories">
+                                    <div class="select-item" data-value="transporte-gasolina">Gasolina</div>
+                                    <div class="select-item" data-value="transporte-publico">Transporte Público</div>
+                                    <div class="select-item" data-value="transporte-mantenimiento">Mantenimiento del Auto</div>
+                                </div>
+                            </div>
+                            <div class="select-category" data-category="personal">
+                                <div class="category-header">
+                                    <span>Gastos Personales</span>
+                                    <i class="fas fa-chevron-right"></i>
+                                </div>
+                                <div class="subcategories">
+                                    <div class="select-item" data-value="personal-ropa">Ropa</div>
+                                    <div class="select-item" data-value="personal-entretenimiento">Entretenimiento</div>
+                                    <div class="select-item" data-value="personal-medicos">Gastos Médicos</div>
+                                    <div class="select-item" data-value="personal-veterinaria">Veterinaria</div>
+                                    <div class="select-item" data-value="personal-alimentacion">Alimentación</div>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="categoria" name="categoria" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="fecha">Fecha:</label>
+                    <input type="date" id="fecha" name="fecha" required>
+                </div>
+
+                <button type="submit" class="btn-agregar">Agregar Gasto</button>
+            </form>
+        </div>
+
+        <!-- Columna Derecha: Resumen y Balance -->
+        <div class="right-column card">
+            <h2>Resumen Mensual</h2>
+            <div class="summary-totals">
+                <div class="summary-item saldo-disponible">
+                    <span>Sueldo Disponible:</span>
+                    <span id="saldoDisponible" class="large-text">₲ 0</span>
+                </div>
+                 <div class="summary-item">
+                    <span>Gastos Totales:</span>
+                    <span id="totalGeneral">₲ 0</span>
+                </div>
+                <div class="summary-item balance-mes">
+                     <span>Balance del Mes:</span>
+                     <span id="balanceMes">₲ 0</span>
+                 </div>
             </div>
-            <div class="botones-accion">
+
+            <h3>Balance por Tipo de Gasto</h3>
+            <div id="balancePorCategoria" class="balance-category-list">
+                <!-- Aquí se mostrarán las barras de balance por categoría -->
+            </div>
+             <div class="botones-accion">
                 <button id="limpiarGastos" class="btn-limpiar">Limpiar Todos los Gastos</button>
                 <button id="exportarCSV" class="btn-exportar">Exportar a CSV</button>
                 <button id="exportarPDF" class="btn-exportar">Exportar a PDF</button>
             </div>
         </div>
+    </div>
 
-        <!-- Sección de gráficos -->
-        <div class="graficos">
-            <div class="grafico-container">
-                <h2>Distribución por Categoría</h2>
-                <canvas id="graficoPie"></canvas>
+     <!-- Sección de gráficos -->
+     <div class="container charts-layout">
+         <div class="chart-container card">
+             <h2>Distribución por Categoría</h2>
+             <canvas id="graficoPie"></canvas>
+         </div>
+         <div class="chart-container card">
+             <h2>Gastos por Mes</h2>
+             <canvas id="graficoBarras"></canvas>
+         </div>
+     </div>
+
+    <!-- Filtros -->
+    <div class="container card">
+        <h2>Filtros</h2>
+        <div class="filtros-container">
+            <div class="form-group">
+                <label for="filtroCategoria">Categoría:</label>
+                <select id="filtroCategoria">
+                    <option value="">Todas las categorías</option>
+                    <optgroup label="Transporte">
+                        <option value="transporte-gasolina">Gasolina</option>
+                        <option value="transporte-publico">Transporte Público</option>
+                        <option value="transporte-mantenimiento">Mantenimiento del Auto</option>
+                    </optgroup>
+                    <optgroup label="Vivienda">
+                        <option value="vivienda-internet">Internet</option>
+                        <option value="vivienda-tv">Pago por la Televisión</option>
+                        <option value="vivienda-agua">Agua</option>
+                        <option value="vivienda-luz">Luz</option>
+                        <option value="vivienda-gas">Gas</option>
+                        <option value="vivienda-alquiler">Alquiler</option>
+                    </optgroup>
+                    <optgroup label="Gastos Personales">
+                        <option value="personal-ropa">Ropa</option>
+                        <option value="personal-entretenimiento">Entretenimiento</option>
+                        <option value="personal-medicos">Gastos Médicos</option>
+                        <option value="personal-veterinaria">Veterinaria</option>
+                        <option value="personal-alimentacion">Alimentación</option>
+                    </optgroup>
+                    <optgroup label="Educación">
+                        <option value="educacion-matricula">Matrícula</option>
+                        <option value="educacion-material">Material Escolar</option>
+                        <option value="educacion-extraescolares">Gastos Extraescolares</option>
+                    </optgroup>
+                </select>
             </div>
-            <div class="grafico-container">
-                <h2>Gastos por Mes</h2>
-                <canvas id="graficoBarras"></canvas>
+            <div class="form-group">
+                <label for="filtroFechaInicio">Fecha Inicio:</label>
+                <input type="date" id="filtroFechaInicio">
+            </div>
+            <div class="form-group">
+                <label for="filtroFechaFin">Fecha Fin:</label>
+                <input type="date" id="filtroFechaFin">
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de gastos -->
+    <div class="container card">
+        <h2>Gastos Registrados</h2>
+        <ul id="listaGastos">
+            <!-- Aquí se mostrarán los gastos -->
+        </ul>
+    </div>
+
+    <!-- Sección de Preguntas Frecuentes -->
+    <div class="container card faq-section">
+        <h2>Preguntas frecuentes</h2>
+        <div class="faq-item">
+            <div class="faq-question">
+                <span>¿Cómo se utiliza la calculadora?</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="faq-answer">
+                <p>Introduce tu sueldo, luego ingresa cada gasto con su categoría correspondiente. La calculadora te mostrará tu saldo disponible y resúmenes.</p>
             </div>
         </div>
 
-        <!-- Filtros -->
-        <div class="filtros">
-            <h2>Filtros</h2>
-            <div class="filtros-container">
-                <div class="form-group">
-                    <label for="filtroCategoria">Categoría:</label>
-                    <select id="filtroCategoria">
-                        <option value="">Todas las categorías</option>
-                        <option value="comida">Comida</option>
-                        <option value="transporte">Transporte</option>
-                        <option value="vivienda">Vivienda</option>
-                        <option value="entretenimiento">Entretenimiento</option>
-                        <option value="servicios">Servicios</option>
-                        <option value="otros">Otros</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="filtroFechaInicio">Fecha Inicio:</label>
-                    <input type="date" id="filtroFechaInicio">
-                </div>
-                <div class="form-group">
-                    <label for="filtroFechaFin">Fecha Fin:</label>
-                    <input type="date" id="filtroFechaFin">
-                </div>
+        <div class="faq-item">
+            <div class="faq-question">
+                <span>¿Qué fines tiene esta calculadora?</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="faq-answer">
+                <p>Te ayuda a llevar un control mensual de tus ingresos y gastos para que puedas planificar mejor tus finanzas personales.</p>
             </div>
         </div>
 
-        <!-- Lista de gastos -->
-        <div class="lista-gastos">
-            <h2>Gastos Registrados</h2>
-            <ul id="listaGastos">
-                <!-- Aquí se mostrarán los gastos -->
-            </ul>
+        <div class="faq-item">
+            <div class="faq-question">
+                <span>¿Cómo se calcula el saldo disponible?</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="faq-answer">
+                <p>Es el resultado de restar el total de gastos registrados al sueldo inicial que ingresaste.</p>
+            </div>
         </div>
+
+        <!-- Agrega más preguntas y respuestas aquí si es necesario -->
+
     </div>
 
     <script src="script.js"></script>
