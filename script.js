@@ -944,6 +944,7 @@ document.addEventListener('DOMContentLoaded', () => {
     gestorGastos = new GestorGastos();
 
     // Inicializar funcionalidad de acordeón para las FAQs
+    console.log("Inicializando listeners de FAQs...");
     const faqQuestions = document.querySelectorAll('.faq-question');
 
     faqQuestions.forEach(question => {
