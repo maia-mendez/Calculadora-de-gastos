@@ -1,5 +1,5 @@
 // Verificación de autenticación
-if (localStorage.getItem('isAuthenticated') !== 'true') {
+if (!localStorage.getItem('access_token')) {
     Swal.fire({
         icon: 'warning',
         title: 'Acceso denegado',
@@ -26,7 +26,7 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
         cancelButtonText: 'Cancelar'
     }).then((result) => {
         if (result.isConfirmed) {
-            localStorage.removeItem('isAuthenticated');
+            localStorage.removeItem('access_token');
             localStorage.removeItem('username');
             window.location.href = 'login.html';
         }
@@ -473,7 +473,7 @@ class GestorGastos {
                     cancelButtonText: 'Cancelar'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        localStorage.removeItem('isAuthenticated');
+                        localStorage.removeItem('access_token');
                         localStorage.removeItem('username');
                         window.location.href = 'login.html';
                     }

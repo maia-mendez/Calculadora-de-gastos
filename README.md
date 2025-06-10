@@ -29,7 +29,31 @@ Una aplicación web para gestionar y controlar tus gastos mensuales de manera ef
 git clone https://github.com/tu-usuario/calculadora-gastos.git
 ```
 
-2. Abre el archivo `index.html` en tu navegador
+2. Instala las dependencias del backend:
+```bash
+cd backend
+pip install flask-mail
+```
+
+3. Configura las variables de entorno:
+   - Copia el archivo `.env.example` a `.env`
+   - Edita el archivo `.env` con tus credenciales:
+     ```
+     EMAIL_USER=tu_correo@gmail.com
+     EMAIL_PASSWORD=tu_contraseña_de_aplicacion
+     ```
+   - Para obtener la contraseña de aplicación de Gmail:
+     1. Ve a tu cuenta de Google
+     2. Activa la verificación en dos pasos si no está activada
+     3. Ve a "Seguridad" > "Contraseñas de aplicación"
+     4. Genera una nueva contraseña para la aplicación
+
+4. Inicia el servidor backend:
+```bash
+python app.py
+```
+
+5. Abre el archivo `index.html` en tu navegador
 
 ## Uso
 

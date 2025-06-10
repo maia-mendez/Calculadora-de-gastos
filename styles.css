@@ -814,4 +814,18 @@ button:hover {
      .faq-answer.show {
          padding-top: 8px;
      }
+}
+
+.logo-container {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.logo-container i {
+    color: #2c3e50;
+    transition: transform 0.3s ease;
+}
+
+.logo-container i:hover {
+    transform: scale(1.1);
 } 

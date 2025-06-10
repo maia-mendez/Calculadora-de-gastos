@@ -17,7 +17,7 @@ yarn-error.log
 # Archivos de entorno
 .env
 .env.local
-.env.*.local
+.env.*
 
 # Archivos de construcción
 dist/
